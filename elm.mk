@@ -15,11 +15,6 @@ INSTALL_TARGETS = src bin build \
 									bin/devd bin/wt \
 									.gitignore \
 									$(CUSTOM_INSTALL_TARGETS)
-COMPILE_TARGETS = build/main.js \
-									build/main.css \
-									build/index.html \
-									build/interop.js \
-									$(CUSTOM_COMPILE_TARGETS)
 TEST_TARGETS = $(NODE_BIN_DIRECTORY)/elm-test test/TestRunner.elm
 SERVER_OPTS = -w build -l build/ $(CUSTOM_SERVER_OPTS)
 
@@ -116,6 +111,8 @@ build/index.html: index.html
 	cp $? $@
 
 define Makefile
+COMPILE_TARGETS := build/main.js build/main.css build/index.html build/interop.js
+
 include elm.mk
 endef
 export Makefile

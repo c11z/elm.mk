@@ -70,10 +70,10 @@ bin/compress:
 
 Compile targets represent the artifacts your project builds every time you run `make`.
 
-For example, if you want to add a second html page to the project, you can extend `CUSTOM_COMPILE_TARGETS`:
+For example, if you want to add a second html page to the project, you can extend `COMPILE_TARGETS`:
 
 ```
-CUSTOM_COMPILE_TARGETS := build/home.html
+COMPILE_TARGETS := build/main.js build/main.html build/main.css build/interop.js build/home.html
 
 build/home.html: home.html
   cp $< $@
