@@ -17,6 +17,8 @@ INSTALL_TARGETS = src bin build \
 									$(CUSTOM_INSTALL_TARGETS)
 TEST_TARGETS = $(NODE_BIN_DIRECTORY)/elm-test test/TestRunner.elm
 SERVER_OPTS = -w build -l build/ $(CUSTOM_SERVER_OPTS)
+EMPTY :=
+SPACE := $(EMPTY) $(EMPTY)
 
 ifeq ($(OS),Darwin)
 	DEVD_URL = "https://github.com/cortesi/devd/releases/download/v${DEVD_VERSION}/devd-${DEVD_VERSION}-osx64.tgz"
@@ -27,6 +29,14 @@ else
 	WELLINGTON_URL = "https://github.com/wellington/wellington/releases/download/v${WELLINGTON_VERSION}/wt_v${WELLINGTON_VERSION}_linux_amd64.tar.gz"
 	MODD_URL = "https://github.com/cortesi/modd/releases/download/v${MODD_VERSION}/modd-${MODD_VERSION}-linux64.tgz"
 endif
+
+map = $(foreach a,$(2),$(call $(1),$(a)))
+split = $(subst $1, ,$2)
+head = $(shell echo $1 | head -c 1)
+tail = $(shell echo $1 | tail -c +2)
+capitalize_path = $(subst $(SPACE),/,$(call map,titlecase,$(call split,/,$1)))
+uppercase = $(shell echo $1 | tr a-z A-Z)
+titlecase = $(call uppercase,$(call head,$1))$(call tail,$1)
 
 all: $(COMPILE_TARGETS) ## Compiles project files
 
@@ -101,8 +111,8 @@ node_modules/.bin/elm-test:
 build/main.css: styles/*.scss
 	bin/wt compile -b build/ styles/main.scss
 
-build/main.js: $(ELM_FILES)
-	elm make $(ELM_ENTRY) --yes --warn --output $@
+build/%.js: $(ELM_FILES)
+	elm make src/$(call capitalize_path,$*).elm --yes --warn --output $@
 
 build/interop.js: src/interop.js
 	cp $? $@
