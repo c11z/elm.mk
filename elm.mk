@@ -1,6 +1,7 @@
 .PHONY: install server watch clean test help
 ELM_ENTRY = src/Main.elm
 ELM_FILES = $(shell find src -type f -name '*.elm')
+SCSS_FILES = $(shell find styles -type f -name '*.scss')
 NODE_BIN_DIRECTORY = node_modules/.bin
 DEVD_VERSION = 0.3
 WELLINGTON_VERSION = 1.0.2
@@ -108,8 +109,8 @@ node_modules/.bin/elm-test:
 .gitignore:
 	echo "$$gitignore" > $@
 
-build/main.css: styles/*.scss
-	bin/wt compile -b build/ styles/main.scss
+build/%.css: $(SCSS_FILES)
+	bin/wt compile -b build/$(dir $*) styles/$*.scss
 
 build/%.js: $(ELM_FILES)
 	elm make src/$(call capitalize_path,$*).elm --yes --warn --output $@
