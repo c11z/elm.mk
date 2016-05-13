@@ -1,7 +1,9 @@
 .PHONY: install server watch clean test help
-ELM_ENTRY = src/Main.elm
+APP_NAME := $(shell basename $(CURDIR))
 ELM_FILES = $(shell find src -type f -name '*.elm')
 SCSS_FILES = $(shell find styles -type f -name '*.scss')
+HTML_FILES = $(shell find pages -type f -name '*.html')
+INTEROP_FILES = $(shell find interop -type f -name '*.js')
 NODE_BIN_DIRECTORY = node_modules/.bin
 DEVD_VERSION = 0.3
 WELLINGTON_VERSION = 1.0.2
@@ -11,7 +13,8 @@ OS := $(shell uname)
 INSTALL_TARGETS = src bin build \
 									Makefile \
 									elm-package.json \
-									src/Main.elm src/interop.js styles/main.scss index.html \
+									src/$(call titlecase,$(APP_NAME))/Main.elm styles/$(APP_NAME)/main.scss \
+									pages/$(APP_NAME)/index.html interop/$(APP_NAME)/app.js \
 									bin/modd modd.conf \
 									bin/devd bin/wt \
 									.gitignore \
@@ -59,7 +62,7 @@ help: ## Prints a help guide
 	@echo "Available tasks:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-build bin src styles:
+build bin src styles pages interop:
 	mkdir -p $@
 
 Makefile:
@@ -68,19 +71,10 @@ Makefile:
 styles/main.scss: styles
 	test -s $@ || touch $@
 
-src/Main.elm: src
-	test -s $@ || echo "$$main_elm" > $@
-
-src/interop.js: src
-	test -s $@ || echo "$$interop_js" > $@
-
 test/TestRunner.elm:
 	$(NODE_BIN_DIRECTORY)/elm-test init --yes
 	mkdir -p test
 	mv *.elm test/
-
-index.html:
-	test -s $@ || echo "$$index_html" > $@
 
 bin/devd:
 	curl ${DEVD_URL} -L -o $@.tgz
@@ -112,34 +106,48 @@ node_modules/.bin/elm-test:
 build/%.css: $(SCSS_FILES)
 	bin/wt compile -b build/$(dir $*) styles/$*.scss
 
+build/%/interop.js: $(INTEROP_FILES) interop
+	mkdir -p build/$*
+	cp interop/$*/app.js $@
+
 build/%.js: $(ELM_FILES)
 	elm make src/$(call capitalize_path,$*).elm --yes --warn --output $@
 
-build/interop.js: src/interop.js
-	cp $? $@
+build/%.html: $(HTML_FILES) pages
+	mkdir -p build/$(dir $*)
+	cp pages/$*.html $@
 
-build/index.html: index.html
-	cp $? $@
+src/$(APP_NAME):
+	mkdir -p src/$(call titlecase,$(APP_NAME))
+
+styles/$(APP_NAME) pages/$(APP_NAME) interop/$(APP_NAME):
+	mkdir -p $@
+
+src/%.elm: src/$(APP_NAME)
+	test -s $@ || echo "$$main_elm" > $@
+
+styles/%.scss: styles/$(APP_NAME)
+	touch $@
+
+pages/%.html: pages/$(APP_NAME)
+	test -s $@ || echo "$$index_html" > $@
+
+interop/%.js: interop/$(APP_NAME)
+	test -s $@ || echo "$$interop_js" > $@
 
 define Makefile
-COMPILE_TARGETS := build/main.js build/main.css build/index.html build/interop.js
+COMPILE_TARGETS := build/$(APP_NAME)/main.js \
+									 build/$(APP_NAME)/main.css \
+									 build/$(APP_NAME)/index.html \
+									 build/$(APP_NAME)/interop.js
 
 include elm.mk
 endef
 export Makefile
 
 define modd_config
-src/**/*.elm {
-  prep: make build/main.js
-}
-src/**/*.js {
-  prep: make build/interop.js
-}
-styles/**/*.scss {
-  prep: make build/main.css
-}
-index.html {
-  prep: make build/index.html
+src/**/*.elm interop/**/*.js pages/**/*.html styles/**/*.scss {
+  prep: make -j 2
 }
 build/** {
   daemon: make server
