@@ -1,0 +1,7 @@
+define boot_js
+window.onload = function() {
+  var app = Elm.Main.fullscreen();
+};
+endef
+export boot_js
+

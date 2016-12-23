@@ -1,0 +1,16 @@
+define index_html
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Elm Project</title>
+  <link rel="stylesheet" href="{{main_css}}">
+</head>
+<body>
+</body>
+  <script type="text/javascript" src="{{main_js}}"></script>
+  <script type="text/javascript" src="{{boot_js}}"></script>
+</html>
+endef
+export index_html
+

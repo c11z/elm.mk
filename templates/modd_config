@@ -1,0 +1,19 @@
+define modd_config
+src/**/*.elm {
+  prep: make $(BUILD_FOLDER)/main.js
+}
+src/**/*.js {
+  prep: make $(BUILD_FOLDER)/boot.js
+}
+styles/**/*.scss {
+  prep: make $(BUILD_FOLDER)/main.css
+}
+index.html {
+  prep: make $(BUILD_FOLDER)/index.html
+}
+$(BUILD_FOLDER)/** {
+  daemon: make server
+}
+endef
+export modd_config
+

@@ -1,0 +1,13 @@
+define types_elm
+module Types exposing (..)
+
+
+type Msg
+    = NoOp
+
+
+type alias Model =
+    Int
+endef
+export types_elm
+
